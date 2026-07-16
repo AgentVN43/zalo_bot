@@ -10,13 +10,6 @@ const server = {
   parameterLimit: 1000,
 };
 
-const database = {
-  uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/zalo-bot',
-  options: {
-    autoIndex: server.nodeEnv !== 'production',
-  },
-};
-
 const zalo = require('./zalo');
 
-module.exports = { server, database, zalo };
+module.exports = { server, zalo };

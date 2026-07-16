@@ -10,11 +10,15 @@ function initZaloBot() {
       return botInstance;
     }
 
+    if (!config.token) {
+      throw new Error('ZALO_TOKEN is not set. Copy .env.example to .env and fill in your bot token.');
+    }
+
     botInstance = new ZaloBot(config.token, {
       polling: config.polling,
     });
 
-    logger.info('Zalo bot initialized', { token: config.token.substring(0, 20) + '...' });
+    logger.info('Zalo bot initialized', { token: config.token.substring(0, 8) + '...' });
     return botInstance;
   } catch (err) {
     logger.error('Bot initialization failed', err);

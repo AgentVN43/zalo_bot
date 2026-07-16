@@ -1,32 +1,23 @@
 /**
- * Default Message Handler - Forward to reminder API
+ * Default Message Handler
+ * Handles any message that is not a command.
+ * Replace the echo below with your own logic.
  */
-const axios = require('axios');
-const config = require('../../config/zalo');
+const { sendMessage } = require('../../services/notificationService');
 const logger = require('../../utils/logger');
 
 /**
- * Handle default message (forward to reminder API)
+ * Handle default (non-command) message
  * @param {Object} bot - Zalo bot instance
  * @param {string} userId - User ID
  * @param {string} text - Message text
  */
 async function handleDefaultMessage(bot, userId, text) {
   try {
-    // Forward message to reminder API
-    await axios.post(config.reminderApiUrl, {
-      userId,
-      message: `Reminder auto: ${text}`
-    }, {
-      timeout: 5000
-    });
-
-    logger.info('Message forwarded to reminder API', { userId, textLength: text.length });
+    await sendMessage(bot, userId, `🤖 Bạn vừa nói: ${text}\n\nGõ /help để xem hướng dẫn.`);
+    logger.info('Default message handled', { userId, textLength: text.length });
   } catch (err) {
-    // Log error but don't notify user (avoid spam)
-    logger.warn('Reminder API error', { userId, error: err.message });
-    // Optionally send a message to user
-    // await bot.sendMessage(userId, '📝 Ghi chú đã được lưu.');
+    logger.error('Default handler error', { userId, error: err.message });
   }
 }
 

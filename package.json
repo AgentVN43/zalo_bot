@@ -1,7 +1,7 @@
 {
-  "name": "zalo-bot-express-webhook",
+  "name": "zalo-bot-express-webhook-template",
   "version": "1.0.0",
-  "description": "Zalo Bot API Server with Express Webhook",
+  "description": "Zalo Bot Express Webhook Template - minimal starter for building Zalo bots",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
@@ -15,11 +15,9 @@
   ],
   "license": "ISC",
   "dependencies": {
-    "axios": "^1.7.9",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.1",
-    "mongoose": "^8.8.4",
     "node-zalo-bot": "^0.1.6",
     "winston": "^3.17.0"
   },

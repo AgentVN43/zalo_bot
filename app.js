@@ -1,25 +1,13 @@
 require('dotenv').config();
 
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
-const path = require('path');
 
-const { server: serverConfig, database: dbConfig } = require('./config');
+const { server: serverConfig, zalo: zaloConfig } = require('./config');
 const logger = require('./utils/logger');
 const { errorHandler, requestLogger } = require('./middleware');
 const { getZaloBot, setupBotHandlers } = require('./bots');
 const setupWebhookRoutes = require('./routes/webhook');
-
-const orderRoutes = require('./routes/orders');
-const applicantRoutes = require('./routes/applicants');
-const paymentRoutes = require('./routes/payment');
-const authRoutes = require('./routes/auth');
-const videoRoutes = require('./routes/video');
-const exchangeRateRoutes = require('./routes/exchange');
-const reminderRoutes = require('./routes/reminders');
-const googleCalendarRoutes = require('./routes/googleCalendar');
-const analyticsRoutes = require('./routes/analytics');
 
 const app = express();
 const port = serverConfig.port;
@@ -49,39 +37,16 @@ app.use(express.urlencoded({
   extended: true,
   parameterLimit: serverConfig.parameterLimit,
 }));
-app.use(express.static(path.join(__dirname, 'uploads')));
 
 app.use(requestLogger);
 
-async function connectDatabase() {
-  try {
-    await mongoose.connect(dbConfig.uri, dbConfig.options);
-    logger.info('MongoDB connected successfully');
-
-    mongoose.connection.on('error', (err) => {
-      logger.error('MongoDB connection error', err);
-    });
-
-    mongoose.connection.on('disconnected', () => {
-      logger.warn('MongoDB disconnected');
-    });
-
-    mongoose.connection.on('reconnected', () => {
-      logger.info('MongoDB reconnected');
-    });
-  } catch (err) {
-    logger.error('MongoDB connection failed', err);
-    process.exit(1);
-  }
-}
-
 let bot = null;
 
-async function initializeBots() {
+function initializeBot() {
   try {
     bot = getZaloBot();
     setupBotHandlers(bot);
-    logger.info('All bots initialized successfully');
+    logger.info('Bot initialized successfully');
     return bot;
   } catch (err) {
     logger.error('Bot initialization failed', err);
@@ -101,19 +66,10 @@ function setupRoutes() {
     });
   });
 
-  app.use(`${bp}/api/orders`, orderRoutes);
-  app.use(`${bp}/api/applicants`, applicantRoutes);
-  app.use(`${bp}/api/auth`, authRoutes);
-  app.use(`${bp}/api/payment`, paymentRoutes);
-  app.use(`${bp}/api/exchange`, exchangeRateRoutes);
-  app.use(`${bp}/api/reminders`, reminderRoutes);
-  app.use(`${bp}/api/calendar`, googleCalendarRoutes);
-  app.use(`${bp}/api/analytics`, analyticsRoutes);
-  app.use(`${bp}/api/video`, videoRoutes);
+  // Add your API routes here, e.g.:
+  // app.use(`${bp}/api/example`, require('./routes/example'));
 
-  if (bot) {
-    app.use(`${bp}/api/zalo`, setupWebhookRoutes(bot));
-  }
+  app.use(`${bp}/api/zalo`, setupWebhookRoutes(bot));
 
   app.use((req, res) => {
     res.status(404).json({
@@ -129,15 +85,13 @@ function setupRoutes() {
 
 async function startServer() {
   try {
-    await connectDatabase();
-    await initializeBots();
+    initializeBot();
     setupRoutes();
 
     const server = app.listen(port, async () => {
       logger.info(`Server running on port ${port}`);
       logger.info(`Time: ${new Date().toLocaleString('vi-VN')}`);
 
-      const { zalo: zaloConfig } = require('./config');
       if (!zaloConfig.polling && bot) {
         try {
           const { setupWebhook } = require('./bots/zalo');
@@ -152,7 +106,6 @@ async function startServer() {
       logger.info(`${signal} signal received: closing server`);
       server.close(() => {
         logger.info('HTTP server closed');
-        mongoose.connection.close();
         process.exit(0);
       });
     };

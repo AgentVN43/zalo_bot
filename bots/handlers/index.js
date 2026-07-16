@@ -1,8 +1,10 @@
 /**
  * Bot Message Handlers - Main Router
+ *
+ * Add new commands here: match the incoming text and delegate
+ * to a dedicated handler file in this directory.
  */
 const logger = require('../../utils/logger');
-const handleReportCommand = require('./report');
 const handleHelpCommand = require('./help');
 const handleDefaultMessage = require('./default');
 
@@ -24,24 +26,18 @@ function setupMessageHandlers(bot) {
 
     try {
       // Route based on command
-      if (text.startsWith('/report') || text.startsWith('/orders')) {
-        await handleReportCommand(bot, userId, text);
-        return;
-      }
-
-      if (text === '/help') {
+      if (text === '/help' || text === '/start') {
         await handleHelpCommand(bot, userId);
         return;
       }
 
+      // Unknown command
       if (text.startsWith('/')) {
-        await bot.sendMessage(userId, 
-          '📋 Commands available:\n• /report [YYYY-MM-DD] - Xem report order\n• /help - Hướng dẫn'
-        );
+        await bot.sendMessage(userId, '📋 Lệnh không hợp lệ. Gõ /help để xem hướng dẫn.');
         return;
       }
 
-      // Default: forward to default handler
+      // Default: non-command message
       await handleDefaultMessage(bot, userId, text);
     } catch (err) {
       logger.error('Message handler error', err);
