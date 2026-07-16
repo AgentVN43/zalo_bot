@@ -20,7 +20,7 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.1",
     "mongoose": "^8.8.4",
-    "zalo-bot-js": "^0.2.1",
+    "node-zalo-bot": "^0.1.6",
     "winston": "^3.17.0"
   },
   "devDependencies": {

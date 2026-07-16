@@ -1,16 +1,9 @@
-/**
- * Zalo Bot Wrapper
- */
 const ZaloBot = require('node-zalo-bot');
 const config = require('../config/zalo');
 const logger = require('../utils/logger');
 
 let botInstance = null;
 
-/**
- * Initialize Zalo bot
- * @returns {Object} Zalo bot instance
- */
 function initZaloBot() {
   try {
     if (botInstance) {
@@ -21,12 +14,11 @@ function initZaloBot() {
       polling: config.polling,
     });
 
-    logger.info('✅ Zalo bot initialized', { token: config.token.substring(0, 20) + '...' });
+    logger.info('Zalo bot initialized', { token: config.token.substring(0, 20) + '...' });
     return botInstance;
   } catch (err) {
-    logger.error('❌ Bot initialization failed', err);
-    
-    // Return mock bot for graceful degradation
+    logger.error('Bot initialization failed', err);
+
     botInstance = {
       on: (event, handler) => {
         logger.warn(`Mock bot listener: ${event}`);
@@ -39,26 +31,21 @@ function initZaloBot() {
       },
       setWebHook: async (url, options) => {
         logger.warn('Mock setWebHook called', { url });
-      }
+      },
     };
 
     return botInstance;
   }
 }
 
-/**
- * Setup webhook for Zalo
- * @param {Object} bot - Bot instance
- * @returns {Promise<void>}
- */
 async function setupWebhook(bot) {
   try {
     await bot.setWebHook(config.webhookUrl, {
-      secret_token: config.secretToken
+      secret_token: config.secretToken,
     });
-    logger.info('✅ Webhook registered', { url: config.webhookUrl });
+    logger.info('Webhook registered', { url: config.webhookUrl });
   } catch (err) {
-    logger.error('❌ Webhook setup failed', err);
+    logger.error('Webhook setup failed', err);
     throw err;
   }
 }
