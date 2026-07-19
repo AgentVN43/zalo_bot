@@ -10,6 +10,14 @@ const server = {
   parameterLimit: 1000,
 };
 
+// External services the bot integrates with
+const integrations = {
+  // Endpoint to forward incoming user messages to (empty = disabled)
+  forwardApiUrl: process.env.FORWARD_API_URL || '',
+  forwardApiKey: process.env.FORWARD_API_KEY || '',
+  forwardTimeoutMs: parseInt(process.env.FORWARD_TIMEOUT_MS, 10) || 10000,
+};
+
 const zalo = require('./zalo');
 
-module.exports = { server, zalo };
+module.exports = { server, zalo, integrations };

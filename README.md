@@ -40,4 +40,46 @@ npm run dev             # hoặc: npm start
 
 - **Lệnh chat mới**: tạo file trong `bots/handlers/`, rồi thêm nhánh route trong `bots/handlers/index.js`.
 - **REST API mới**: tạo router trong `routes/`, mount trong `setupRoutes()` ở `app.js`.
-- **Database, service ngoài, v.v.**: chưa kèm sẵn — thêm khi cần.
+- **Nghiệp vụ / gọi API ngoài**: xem ví dụ mẫu bên dưới.
+
+## Ví dụ nghiệp vụ: forward tin nhắn sang endpoint ngoài
+
+Template kèm sẵn 1 nghiệp vụ mẫu: tin nhắn thường (không phải lệnh `/...`) của end user
+sẽ được POST sang endpoint bạn chỉ định, rồi bot trả lời user theo kết quả.
+
+Luồng xử lý:
+
+```
+Zalo user nhắn tin
+  → Zalo POST vào routes/webhook.js (xác thực secret)
+  → bot.processUpdate() phát event "message"
+  → bots/handlers/index.js route theo lệnh
+  → bots/handlers/default.js (không phải lệnh)
+  → services/forwardService.js POST sang FORWARD_API_URL
+  → bot trả lời user (result.message hoặc ack mặc định)
+```
+
+Bật tính năng bằng cách đặt trong `.env`:
+
+```
+FORWARD_API_URL=https://your-api.com/api/messages
+FORWARD_API_KEY=optional-bearer-token
+```
+
+Payload gửi đi:
+
+```json
+{
+  "source": "zalo",
+  "userId": "<zalo user id>",
+  "text": "<nội dung tin nhắn>",
+  "receivedAt": "2026-01-01T00:00:00.000Z"
+}
+```
+
+Nếu endpoint trả về JSON có field `message`, bot sẽ dùng nó làm câu trả lời cho user.
+Khi `FORWARD_API_URL` để trống, bot chạy chế độ echo (dùng khi dev).
+
+**Pattern chung khi thêm nghiệp vụ mới**: viết logic gọi API/DB vào 1 file trong
+`services/` (nhận input thuần, trả kết quả, throw khi lỗi), rồi gọi service đó từ
+handler trong `bots/handlers/` — handler chỉ lo parse tin nhắn và trả lời user.
